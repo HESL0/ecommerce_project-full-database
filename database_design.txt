@@ -10,15 +10,13 @@ password_hash
 phone
 created_at
 
-cursor.execute("""
-
-""")
 
 TABLE: categories
 
 id
 name
 description
+
 
 
 
@@ -41,7 +39,9 @@ status
 total_amount
 created_at
 
+cursor.execute("""
 
+""")
 
 TABLE: order_items
 

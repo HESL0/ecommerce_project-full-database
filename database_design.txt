@@ -1,0 +1,52 @@
+DATABASE: ecommerce
+
+
+TABLE: users
+
+id
+name
+email
+password_hash
+phone
+created_at
+
+cursor.execute("""
+
+""")
+
+TABLE: categories
+
+id
+name
+description
+
+
+
+TABLE: products
+
+id
+category_id
+name
+description
+price
+created_at
+
+
+
+TABLE: orders
+
+id
+user_id
+status
+total_amount
+created_at
+
+
+
+TABLE: order_items
+
+id
+order_id
+product_id
+quantity
+price_at_purchase

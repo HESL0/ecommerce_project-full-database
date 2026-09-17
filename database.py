@@ -306,8 +306,16 @@ def create_order(connection, user_id, items):
     WHERE id = ?
 """,(user_id,))
     user = cursor.fetchone()
-    if user == None :
-        print("this user does not exist")
+    
+    for product_id, quantity in items:
+    cursor.execute("""
+        SELECT name, price
+        FROM products
+        WHERE id = ?
+    """, (product_id,))
+    product = cursor.fetchone()
+    if product is None:
+        print("this product does not exist")
         return
 # =========================================================
 # APPLICATION MENU

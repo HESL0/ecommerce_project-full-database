@@ -289,41 +289,68 @@ def delete_user(connection, user_id):
         cursor.execute("""
         DELETE FROM users
         WHERE id = ?
-    """,(user_id,))
+    """, (user_id,))
         connection.commit()
         return cursor.rowcount
     except sqlite3.IntegrityError:
         connection.rollback()
-        print("Cannot delete this user because they have related orders.")  
+        print("Cannot delete this user because they have related orders.")
         return 0
 
 
 def create_order(connection, user_id, items):
     cursor = connection.cursor()
+
     cursor.execute("""
-    SELECT id
-    FROM users
-    WHERE id = ?
-""",(user_id,))
-    user = cursor.fetchone()
-    
-    for product_id, quantity in items:
-    cursor.execute("""
-        SELECT name, price
-        FROM products
+        SELECT id
+        FROM users
         WHERE id = ?
-    """, (product_id,))
-    product = cursor.fetchone()
-    if product is None:
-        print("this product does not exist")
+    """, (user_id,))
+
+    user = cursor.fetchone()
+
+    if user is None:
+        print("This user does not exist.")
         return
-    for item in items:
+
+    total_amount = 0
+
+    for product_id, quantity in items:
         cursor.execute("""
-SEL
-""")
+            SELECT name, price
+            FROM products
+            WHERE id = ?
+        """, (product_id,))
+
+        product = cursor.fetchone()
+
+        if product is None:
+            print("This product does not exist.")
+            return
+
+        name, price = product
+        subtotal = price * quantity
+        total_amount += subtotal
+    created_at = date.today().isoformat()
+    cursor.execute("""
+    INSERT INTO orders(
+    user_id,
+    status,
+    total_amount,
+    created_at
+)VALUES(?, ?, ?, ?)
+    """,(user_id, "pending", total_amount, created_at))
+    order_id = cursor.lastrowid
+
+     cursor.execute("""
+
+     """)
+
+
 # =========================================================
 # APPLICATION MENU
 # =========================================================
+
 
 while True:
     print("\nMenu:")
@@ -428,7 +455,7 @@ while True:
 
     else:
         print("Invalid choice. Please enter 1-7.")
-        
+
 
 # =========================================================
 # CLOSE DATABASE

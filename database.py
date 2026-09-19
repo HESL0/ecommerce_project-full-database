@@ -309,6 +309,10 @@ def create_order(connection, user_id, items):
     if user == None :
         print("this user does not exist")
         return
+    for item in items:
+        cursor.execute("""
+SEL
+""")
 # =========================================================
 # APPLICATION MENU
 # =========================================================

@@ -494,26 +494,27 @@ while True:
         if report_choice == "1":
             result = reports.get_orders_with_users(connection)
 
-            for report in reports:
+            for report in result:
                 print(report)
 
         elif report_choice == "2":
             print(reports.top_spending_user(connection))
 
         elif report_choice == "3":
-            reports = reports.best_selling_products(connection)
+            result = reports.best_selling_products(connection)
 
-            for report in reports:
+            for report in result:
                 print(report)
 
         elif report_choice == "4":
             print(reports.get_total_revenue(connection))
 
         elif report_choice == "5":
-            reports = reports.get_users_without_orders(connection)
+            result = reports.get_users_without_orders(connection)
 
-            for report in reports:
+            for report in result:
                 print(report)
+                
     elif choice == "8":
         print("Exiting application. Goodbye!")
         break

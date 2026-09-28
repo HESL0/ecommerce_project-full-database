@@ -395,13 +395,6 @@ def get_orders_with_users(connection):
 
     return cursor.fetchall()
 
-
-orders = get_orders_with_users(connection)
-
-for order in orders:
-    print(order)
-
-
 def top_spending_user(connection):
     cursor = connection.cursor()
 
@@ -467,9 +460,10 @@ while True:
     print("4. Find user by email address")
     print("5. Change selected user phone number")
     print("6. Delete user")
-    print("7. Exit")
+    print("7. View admin reports")
+    print("8. Exit")
 
-    choice = input("Enter your choice (1-7): ")
+    choice = input("Enter your choice (1-8): ")
 
     if choice == "1":
         category_id = input("Enter category ID: ")
@@ -555,13 +549,44 @@ while True:
             print("User was not deleted.")
         else:
             print(f"User {user} was deleted successfully.")
-
     elif choice == "7":
+        print("\nAdmin Reports:")
+        print("1. Orders with users")
+        print("2. Top spending user")
+        print("3. Best selling products")
+        print("4. Total revenue")
+        print("5. Users without orders")
+
+        report_choice = input("Choose report: ")
+
+        if report_choice == "1":
+            reports = get_orders_with_users(connection)
+
+            for report in reports:
+                print(report)
+
+        elif report_choice == "2":
+            print(top_spending_user(connection))
+
+        elif report_choice == "3":
+            reports = best_selling_products(connection)
+
+            for report in reports:
+                print(report)
+
+        elif report_choice == "4":
+            print(get_total_revenue(connection))
+
+        elif report_choice == "5":
+            reports = get_users_without_orders(connection)
+
+            for report in reports:
+                print(report)
+    elif choice == "8":
         print("Exiting application. Goodbye!")
         break
-
     else:
-        print("Invalid choice. Please enter 1-7.")
+        print("Invalid choice. Please enter 1-8.")
 
 
 # =========================================================

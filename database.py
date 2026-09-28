@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import date
-
+import reports
 
 # =========================================================
 # DATABASE CONNECTION
@@ -378,75 +378,7 @@ def create_order(connection, user_id, items):
         return None
 
 
-def get_orders_with_users(connection):
-    cursor = connection.cursor()
 
-    cursor.execute("""
-        SELECT
-            orders.id,
-            users.name,
-            orders.status,
-            orders.total_amount,
-            orders.created_at
-        FROM orders
-        JOIN users
-        ON users.id = orders.user_id
-    """)
-
-    return cursor.fetchall()
-
-def top_spending_user(connection):
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT
-            users.name,
-            SUM(orders.total_amount) AS total_spent
-        FROM orders
-        JOIN users
-            ON users.id = orders.user_id
-        GROUP BY users.id, users.name
-        ORDER BY total_spent DESC
-        LIMIT 1
-    """)
-
-    return cursor.fetchone()
-
-
-def best_selling_products(connection):
-    cursor = connection.cursor()
-    cursor.execute("""
-    SELECT 
-    products.name,
-    SUM(order_items.quantity * order_items.price_at_purchase) AS revenue
-    FROM order_items
-    JOIN products
-    ON order_items.product_id = products.id
-    GROUP BY products.id, products.name
-    ORDER BY revenue DESC
-""")
-
-    
-def get_total_revenue(connection):
-    cursor = connection.cursor()
-    cursor.execute("""
-        SELECT SUM(total_amount) AS total_revenue
-        FROM orders
-""")
-
-    return cursor.fetchone()
-def get_users_without_orders(connection):
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT users.name
-        FROM users
-        LEFT JOIN orders
-            ON orders.user_id = users.id
-        WHERE orders.id IS NULL
-    """)
-
-    return cursor.fetchall()
 # =========================================================
 # APPLICATION MENU
 # =========================================================
@@ -560,25 +492,25 @@ while True:
         report_choice = input("Choose report: ")
 
         if report_choice == "1":
-            reports = get_orders_with_users(connection)
+            result = reports.get_orders_with_users(connection)
 
             for report in reports:
                 print(report)
 
         elif report_choice == "2":
-            print(top_spending_user(connection))
+            print(reports.top_spending_user(connection))
 
         elif report_choice == "3":
-            reports = best_selling_products(connection)
+            reports = reports.best_selling_products(connection)
 
             for report in reports:
                 print(report)
 
         elif report_choice == "4":
-            print(get_total_revenue(connection))
+            print(reports.get_total_revenue(connection))
 
         elif report_choice == "5":
-            reports = get_users_without_orders(connection)
+            reports = reports.get_users_without_orders(connection)
 
             for report in reports:
                 print(report)

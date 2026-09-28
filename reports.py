@@ -46,6 +46,7 @@ def best_selling_products(connection):
     ORDER BY revenue DESC
 """)
 
+    return cursor.fetchall()
     
 def get_total_revenue(connection):
     cursor = connection.cursor()

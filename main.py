@@ -1,10 +1,14 @@
-import sqlite3
+import psycopg
 import functions
-import reports
+import reports2
 
-connection = sqlite3.connect("ecommerce.db")
-connection.execute("PRAGMA foreign_keys = ON")
-
+connection = psycopg.connect(
+    dbname="ecommerce_db",
+    user="postgres",
+    password="amir123456@",
+    host="localhost",
+    port="5432"
+)
 while True:
     print("\nMenu:")
     print("1. View all products by category")

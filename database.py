@@ -1,4 +1,4 @@
-import sqlite3
+import psycopg
 import reports
 import functions
 

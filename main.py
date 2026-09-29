@@ -1,14 +1,19 @@
 import psycopg
 import functions
-import reports2
+import reports
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 connection = psycopg.connect(
-    dbname="ecommerce_db",
-    user="postgres",
-    password="amir123456@",
-    host="localhost",
-    port="5432"
+    dbname=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    host=os.getenv("DB_HOST"),
+    port=os.getenv("DB_PORT")
 )
+
 while True:
     print("\nMenu:")
     print("1. View all products by category")

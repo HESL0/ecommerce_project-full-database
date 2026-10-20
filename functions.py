@@ -1,5 +1,39 @@
-import sqlite3
+import psycopg
 from datetime import date
+
+
+def get_all_products(connection):
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT id, name, price
+        FROM products;
+    """)
+
+    products = cursor.fetchall()
+
+    return products
+
+
+def create_product(connection, name, price):
+    cursor = connection.cursor()
+
+    created_at = date.today().isoformat()
+
+    cursor.execute("""
+        INSERT INTO products (
+            name,
+            price,
+            created_at
+        )
+        VALUES (%s, %s, %s)
+    """, (
+        name,
+        price,
+        created_at
+    ))
+
+    connection.commit()
 
 
 def get_products_by_category(connection, category_id):
@@ -12,7 +46,7 @@ def get_products_by_category(connection, category_id):
         FROM products p
         JOIN categories c
             ON p.category_id = c.id
-        WHERE c.id = ?
+        WHERE c.id = %s
     """, (category_id,))
 
     return cursor.fetchall()
@@ -24,7 +58,7 @@ def get_user_orders(connection, user_id):
     cursor.execute("""
         SELECT *
         FROM orders
-        WHERE user_id = ?
+        WHERE user_id = %s
     """, (user_id,))
 
     return cursor.fetchall()
@@ -32,6 +66,7 @@ def get_user_orders(connection, user_id):
 
 def register_user(connection, name, email, password_hash, phone):
     cursor = connection.cursor()
+
     created_at = date.today().isoformat()
 
     try:
@@ -43,7 +78,7 @@ def register_user(connection, name, email, password_hash, phone):
                 phone,
                 created_at
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """, (
             name,
             email,
@@ -56,7 +91,7 @@ def register_user(connection, name, email, password_hash, phone):
 
         print("User registered successfully.")
 
-    except sqlite3.IntegrityError:
+    except psycopg.IntegrityError:
         connection.rollback()
 
         print("This email already exists. Please log in instead.")
@@ -68,7 +103,7 @@ def get_user_by_email(connection, email):
     cursor.execute("""
         SELECT *
         FROM users
-        WHERE email = ?
+        WHERE email = %s
     """, (email,))
 
     return cursor.fetchone()
@@ -79,25 +114,36 @@ def update_user_phone(connection, new_phone, user_id):
 
     cursor.execute("""
         UPDATE users
-        SET phone = ?
-        WHERE id = ? 
-""", (new_phone, user_id))
+        SET phone = %s
+        WHERE id = %s
+    """, (
+        new_phone,
+        user_id
+    ))
+
     connection.commit()
+
     return cursor.rowcount
 
 
 def delete_user(connection, user_id):
     cursor = connection.cursor()
+
     try:
         cursor.execute("""
-        DELETE FROM users
-        WHERE id = ?
-    """, (user_id,))
+            DELETE FROM users
+            WHERE id = %s
+        """, (user_id,))
+
         connection.commit()
+
         return cursor.rowcount
-    except sqlite3.IntegrityError:
+
+    except psycopg.IntegrityError:
         connection.rollback()
+
         print("Cannot delete this user because they have related orders.")
+
         return 0
 
 
@@ -107,14 +153,14 @@ def create_order(connection, user_id, items):
     cursor.execute("""
         SELECT id
         FROM users
-        WHERE id = ?
+        WHERE id = %s
     """, (user_id,))
 
     user = cursor.fetchone()
 
     if user is None:
         print("This user does not exist.")
-        return
+        return None
 
     total_amount = 0
 
@@ -122,16 +168,17 @@ def create_order(connection, user_id, items):
         cursor.execute("""
             SELECT name, price
             FROM products
-            WHERE id = ?
+            WHERE id = %s
         """, (product_id,))
 
         product = cursor.fetchone()
 
         if product is None:
             print("This product does not exist.")
-            return
+            return None
 
         name, price = product
+
         subtotal = price * quantity
         total_amount += subtotal
 
@@ -139,41 +186,52 @@ def create_order(connection, user_id, items):
 
     try:
         cursor.execute("""
-            INSERT INTO orders(
+            INSERT INTO orders (
                 user_id,
                 status,
                 total_amount,
                 created_at
             )
-            VALUES(?, ?, ?, ?)
-        """, (user_id, "pending", total_amount, created_at))
+            VALUES (%s, %s, %s, %s)
+            RETURNING id
+        """, (
+            user_id,
+            "pending",
+            total_amount,
+            created_at
+        ))
 
-        order_id = cursor.lastrowid
+        order_id = cursor.fetchone()[0]
 
         for product_id, quantity in items:
             cursor.execute("""
                 SELECT price
                 FROM products
-                WHERE id = ?
+                WHERE id = %s
             """, (product_id,))
 
             price = cursor.fetchone()[0]
 
             cursor.execute("""
-                INSERT INTO order_items(
+                INSERT INTO order_items (
                     order_id,
                     product_id,
                     quantity,
                     price_at_purchase
                 )
-                VALUES(?, ?, ?, ?)
-            """, (order_id, product_id, quantity, price))
+                VALUES (%s, %s, %s, %s)
+            """, (
+                order_id,
+                product_id,
+                quantity,
+                price
+            ))
 
         connection.commit()
 
         return order_id
 
-    except sqlite3.IntegrityError:
+    except psycopg.IntegrityError:
         connection.rollback()
 
         print("Order creation failed.")

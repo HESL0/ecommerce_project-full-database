@@ -35,7 +35,15 @@ def create_product(connection, name, price):
 
     connection.commit()
 
-
+def delete_product(connection, product_id):
+    cursor = connection.cursor()
+    cursor.execute("""
+    DELETE FROM products
+    WHERE id = %s
+    """,(product_id,))
+    connection.commit()
+    return cursor.rowcount
+    
 def get_products_by_category(connection, category_id):
     cursor = connection.cursor()
 
